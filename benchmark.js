@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import Database from "better-sqlite3";
 
 const n = 1000000;
-const nToSelect = 100;
+const nToSelect = parseInt(process.argv[2]);
 
 console.log("generating random data...");
 const allIds = Array(n)
@@ -31,20 +31,29 @@ for (const i of allIds) {
 
 console.log("performing queries...");
 
-console.time();
-if (process.argv[2] === "combined") {
+const strategy = process.argv[3];
+
+console.time("time");
+if (strategy === "combined") {
   const qs = `SELECT * FROM test WHERE id IN (${idsToSelect
     .map(() => "?")
     .join(", ")})`;
   const get = db.prepare(qs);
   get.all(idsToSelect);
-} else if (process.argv[2] === "separate") {
-  const get = db.prepare("SELECT * FROM test WHERE id = ?", 1);
+} else if (strategy === "separate") {
+  const get = db.prepare("SELECT * FROM test WHERE id = ?");
   for (const i of idsToSelect) {
     get.all([i]);
   }
+} else if (strategy === "or") {
+  const whereClauses = idsToSelect.map(() => "id = ?");
+
+  const get = db.prepare(
+    `SELECT * FROM test WHERE ${whereClauses.join(" OR ")}`
+  );
+  get.all(idsToSelect);
 } else {
   console.log("please provide either 'combined' or 'separate' as an argument");
 }
 
-console.timeEnd();
+console.timeEnd("time");
