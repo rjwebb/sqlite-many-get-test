@@ -17,16 +17,14 @@ for (let i = 0; i < nToSelect; i++) {
   idsToSelect.push(allIds[i]);
 }
 
-idsToSelect.sort();
-
 console.log("creating database...");
 const db = new Database(":memory:");
 
-db.exec("CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT)");
+db.exec("CREATE TABLE test (id TEXT PRIMARY KEY)");
 
 console.log("populating values...");
-for (const i of allIds) {
-  db.prepare("INSERT INTO test (name) VALUES (?)").run(`name${i}`);
+for (const id of allIds) {
+  db.prepare("INSERT INTO test (id) VALUES (?)").run(id);
 }
 
 console.log("performing queries...");
